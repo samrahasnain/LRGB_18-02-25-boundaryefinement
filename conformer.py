@@ -31,11 +31,11 @@ class JLModule(nn.Module):
     def forward(self, x):
 
         convr = self.backbone(x)
-        '''print("Backbone Features shape")
+        print("Backbone Features shape")
         print("RGB1: ",convr[1].shape)
         print("RGB2: ",convr[2].shape)
         print("RGB3: ",convr[3].shape)
-        print("RGB4: ",convr[4].shape)'''
+        print("RGB4: ",convr[4].shape)
      
         
 
