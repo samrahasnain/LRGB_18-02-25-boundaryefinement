@@ -274,7 +274,7 @@ class JL_DCF(nn.Module):
         self.coarse_layer=coarse_layer
         self.gde_layers=gde_layers
         self.decoder=decoder
-        self.BoundaryRefinement=BoundaryRefinement(1)
+        self.BoundaryRefinement=BoundaryRefinement
         
     def forward(self, f_all):
         conv1r, conv2r, conv3r, conv4r = self.JLModule(f_all)
@@ -290,7 +290,7 @@ class JL_DCF(nn.Module):
 def build_model(network='conformer', base_model_cfg='conformer'):
    
         backbone= mobilenet_v2()
-        
+        in_channel=1
    
 
-        return JL_DCF(JLModule(backbone),LDELayer(),CoarseLayer(),GDELayer(),Decoder(),BoundaryRefinement())
+        return JL_DCF(JLModule(backbone),LDELayer(),CoarseLayer(),GDELayer(),Decoder(),BoundaryRefinement(in_channel))
