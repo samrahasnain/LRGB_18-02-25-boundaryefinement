@@ -252,9 +252,21 @@ class Decoder(nn.Module):
 
         return sal_final,edge_rgbd0
 
+class BoundaryRefinement(nn.Module):
+    def __init__(self, in_channels):
+        super(BoundaryRefinement, self).__init__()
+        self.conv = nn.Sequential(
+            nn.Conv2d(in_channels, in_channels, 3, padding=1),
+            nn.ReLU(inplace=True),
+            nn.Conv2d(in_channels, in_channels, 3, padding=1),
+            nn.ReLU(inplace=True)
+        )
+
+    def forward(self, x):
+        return x + self.conv(x)  # Residual refinement
 
 class JL_DCF(nn.Module):
-    def __init__(self,JLModule,lde_layers,coarse_layer,gde_layers,decoder):
+    def __init__(self,JLModule,lde_layers,coarse_layer,gde_layers,decoder,BoundaryRefinement):
         super(JL_DCF, self).__init__()
         
         self.JLModule = JLModule
@@ -262,7 +274,7 @@ class JL_DCF(nn.Module):
         self.coarse_layer=coarse_layer
         self.gde_layers=gde_layers
         self.decoder=decoder
-        self.final_conv=nn.Conv2d(8,1,1,1,0)
+        self.BoundaryRefinement=BoundaryRefinement(1)
         
     def forward(self, f_all):
         conv1r, conv2r, conv3r, conv4r = self.JLModule(f_all)
@@ -271,7 +283,7 @@ class JL_DCF(nn.Module):
         rgb_h,rgb_m=self.gde_layers(conv3r, conv4r, coarse_sal_rgb)
 
         sal_final,edge_rgbd0=self.decoder(lde_out ,rgb_h,rgb_m)
-
+        sal_final = self.BoundaryRefinement(sal_final)
         return sal_final,coarse_sal_rgb,edge_rgbd0
         #,lde_out,rgb_h,rgb_m
 
@@ -281,4 +293,4 @@ def build_model(network='conformer', base_model_cfg='conformer'):
         
    
 
-        return JL_DCF(JLModule(backbone),LDELayer(),CoarseLayer(),GDELayer(),Decoder())
+        return JL_DCF(JLModule(backbone),LDELayer(),CoarseLayer(),GDELayer(),Decoder(),BoundaryRefinement())
